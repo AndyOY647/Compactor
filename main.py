@@ -18,7 +18,7 @@ import random
 pygame.font.init()
 
 # GLOBALS VARS
-s_width = 768
+s_width = 1000
 s_height = 768
 play_width = 640  # meaning 300 // 10 = 30 width per block
 play_height = 640  # meaning 600 // 20 = 20 height per block
@@ -85,7 +85,7 @@ class Piece(object):
 
 def create_grid(locked_positions={}):
     # creates a black 10 by 10 grid
-    grid = [[(0,0,0) for i in range(10)]for i in range(20)]
+    grid = [[(0,0,0) for i in range(10)]for i in range(10)]
 
     for row in range(len(grid)):
         for col in range(len(grid)):
@@ -161,11 +161,37 @@ def draw_grid(surface, row, col):
 
 
 def clear_rows(grid, locked):
-    pass
-
+    inc = 0
+    #looping the grid backward
+    for i in range(len(grid)-1, -1, -1):
+        row = grid[i]
+        if(0,0,0) not in row:
+            inc += 1
+            ind += 1
+            for j in range(len(row)):
+                try:
+                    del locked[(j,i)]
+                except:
+                    continue
+            
 
 def draw_next_shape(shape, surface):
-    pass
+    font = pygame.font.SysFont('comicsans', 10)
+    label = font.render('Next Shape', 1, (255,255,255))
+
+    sx = top_left_x +play_width
+    sy = top_left_y + play_height/2 -100
+
+    format = shape.shape[shape.rotation % len(shape.shape)]
+
+    for i, line in enumerate(format):
+        row = list(line)
+        for j, column in enumerate(row):
+            if column == '0':
+                pygame.draw.rect(surface, shape.color, (sx + j*block_size/2, sy +i *block_size/2, block_size/2, block_size/2), 0)
+
+    surface.blit(label, (sx+50, sy))
+
 
 
 def draw_window(surface, grid):
@@ -186,8 +212,9 @@ def draw_window(surface, grid):
     # boarder for grid
     pygame.draw.rect(surface, (255, 0, 0), (top_left_x, top_left_y, play_width, play_height), 4)
 
+    
     draw_grid(surface, row, col)
-    pygame.display.update()
+    #pygame.display.update()
 
 def main(win):
     lock_positions = {}
@@ -199,11 +226,13 @@ def main(win):
     clock = pygame.time.Clock()
     fall_time = 0
     fall_speed = 0.40
+    
 
     while run:
         grid = create_grid(lock_positions)
         fall_time += clock.get_rawtime()
         clock.tick()
+        current_piece.x = 100
         #Music here
         #################
         if fall_time /1000 > fall_speed:
@@ -257,7 +286,10 @@ def main(win):
             next_piece = get_shape()
             change_piece = False
 
+        
         draw_window(win, grid)
+        draw_next_shape(next_piece, win)
+        pygame.display.update()
         if check_lost(lock_positions):
             run = False
 
