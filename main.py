@@ -226,13 +226,14 @@ def main(win):
     clock = pygame.time.Clock()
     fall_time = 0
     fall_speed = 0.40
+    current_piece.x = 4
     
 
     while run:
         grid = create_grid(lock_positions)
         fall_time += clock.get_rawtime()
         clock.tick()
-        current_piece.x = 100
+        
         #Music here
         #################
         if fall_time /1000 > fall_speed:
@@ -279,12 +280,15 @@ def main(win):
                 grid[y][x] = current_piece.color
 
         if change_piece:
+            
             for pos in shape_pos:
                 p = (pos[0], pos[1])
                 lock_positions[p] = current_piece.color
             current_piece = next_piece
             next_piece = get_shape()
+            current_piece.x = 4
             change_piece = False
+            
 
         
         draw_window(win, grid)
