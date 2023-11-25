@@ -167,13 +167,23 @@ def clear_rows(grid, locked):
         row = grid[i]
         if(0,0,0) not in row:
             inc += 1
-            ind += 1
+            ind = i
             for j in range(len(row)):
                 try:
                     del locked[(j,i)]
                 except:
                     continue
-            
+    
+    if inc > 0: 
+        #The lambda function returns the second item of the list while looping the list backward 
+        # so we don't overwrite any existing rows
+        for key in sorted(list(locked), key = lambda x: x[1])[::-1]:
+            x, y = key
+            if y < ind:
+                newKey = (x, y + inc)
+                locked[newKey] = locked.pop(key)
+
+
 
 def draw_next_shape(shape, surface):
     font = pygame.font.SysFont('comicsans', 10)
@@ -227,12 +237,13 @@ def main(win):
     fall_time = 0
     fall_speed = 0.40
     current_piece.x = 4
-    
+    level_time = 0
 
     while run:
         grid = create_grid(lock_positions)
         fall_time += clock.get_rawtime()
         clock.tick()
+        
         
         #Music here
         #################
@@ -288,7 +299,7 @@ def main(win):
             next_piece = get_shape()
             current_piece.x = 4
             change_piece = False
-            
+            clear_rows(grid, lock_positions)
 
         
         draw_window(win, grid)
