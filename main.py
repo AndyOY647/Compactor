@@ -85,6 +85,9 @@ class Piece(object):
         self.image = pygame.image.load(shape_images[shapes.index(shape)])
         self.image_rect = self.image.get_rect()
 
+    def display(self, surface, image):
+        surface.blit(image)
+
 
 def create_grid(locked_positions={}):
     # creates a black 10 by 10 grid
@@ -97,7 +100,7 @@ def create_grid(locked_positions={}):
                 grid[row][col] = c
     return grid
 
-def convert_shape_format(shape):
+def convert_shape_format(shape, surface):
     positions = []
     # Getting the sublist for each rotation
     format = shape.shape[shape.rotation % len(shape.shape)]
@@ -108,21 +111,25 @@ def convert_shape_format(shape):
         for j, column in enumerate(row):
             if column == '0':
                 positions.append((shape.x +j, shape.y + i))
+                surface.blit(shape.image, (shape.x +j, shape.y + i))
+
+
+
 
     for i , pos in enumerate(positions):
         # offset shape left and up
         positions[i] = pos[0] - 2, pos[1] - 4
-        
 
+    surface.blit(shape.image, positions[i])
     return positions
 
 
 
 
-def valid_space( shape, grid):
+def valid_space(shape, grid, surface):
     accepted_positions = [[(j, i) for j in range(10) if grid[i][j] == (0, 0, 0)] for i in range(10)]
     accepted_positions = [j for sub in accepted_positions for j in sub]
-    formatted = convert_shape_format(shape)
+    formatted = convert_shape_format(shape, surface)
     for pos in formatted:
         if pos not in accepted_positions:
             if pos[1] > -1:
@@ -141,8 +148,8 @@ def check_lost(positions):
 
 def get_shape():
     global shapes, shape_colors, shape_images
-
     return Piece(1,0, random.choice(shapes))
+
 
 
 def draw_text_middle(text, size, color, surface):
@@ -204,12 +211,12 @@ def draw_next_shape(shape, surface):
             if column == '0':
                 #Draw image in the shape form then shift to the side of the screen
                 #pygame.draw.rect(surface, shape.color, (sx + j*block_size/2, sy +i *block_size/2, block_size/2, block_size/2), 0)
-                surface.blit(shape.image,(sx + j*block_size/2, sy +i *block_size/2, block_size/2, block_size/2) )
-    surface.blit(label, (sx+50, sy))
+                surface.blit(shape.image,(sx + j*block_size/2, sy+i *block_size/2, block_size/2, block_size/2))
+    surface.blit(label, (sx+70, sy))
 
 
 
-def draw_window(surface, grid):
+def draw_window(surface, grid, shape):
     row = 10
     col = 10
     surface.fill((0, 0, 0))
@@ -222,8 +229,15 @@ def draw_window(surface, grid):
 
     for i in range(len(grid)):
         for j in range(len(grid[i])):
-            pygame.draw.rect(surface, grid[i][j],
-                             (top_left_x + j * block_size, top_left_y + i * block_size, block_size, block_size), 0)
+            #If we need bg color for the block
+            # pygame.draw.rect(surface, grid[i][j],
+            #                  (top_left_x + j * block_size, top_left_y + i * block_size, block_size, block_size), 0)
+
+            # Replace block with asset if not black
+            if grid[i][j] != (0,0,0):
+                surface.blit(shape.image, (top_left_x + j * block_size, top_left_y + i * block_size, block_size, block_size))
+
+
     # boarder for grid
     pygame.draw.rect(surface, (255, 0, 0), (top_left_x, top_left_y, play_width, play_height), 4)
 
@@ -248,6 +262,8 @@ def main(win):
         grid = create_grid(lock_positions)
         fall_time += clock.get_rawtime()
         clock.tick()
+        win.blit(current_piece.image, (current_piece.x, current_piece.y))
+
         
         
         
@@ -257,9 +273,10 @@ def main(win):
         if fall_time /1000 > fall_speed:
             fall_time = 0
             current_piece.y += 1
-            if not(valid_space(current_piece, grid) and current_piece.y > 0):
+            if not(valid_space(current_piece, grid, win) and current_piece.y > 0):
                 current_piece.y -= 1
                 change_piece = True
+
 
 
         #Key press check
@@ -272,30 +289,31 @@ def main(win):
                 if event.key == pygame.K_LEFT:
                     current_piece.x -= 1
                     #check boarder
-                    if not(valid_space( current_piece, grid)):
+                    if not(valid_space(current_piece, grid, win)):
                         current_piece.x += 1
                 #Right
                 if event.key == pygame.K_RIGHT:
                     current_piece.x += 1
-                    if not (valid_space(current_piece, grid)):
+                    if not (valid_space(current_piece, grid, win)):
                         current_piece.x -= 1
                 #Down
                 if event.key == pygame.K_DOWN:
                     current_piece.y += 1
-                    if not(valid_space( current_piece,grid)):
+                    if not(valid_space( current_piece,grid, win)):
                         current_piece.y -= 1
                 #UP
                 if event.key == pygame.K_UP:
                     current_piece.rotation += 1
-                    if not (valid_space( current_piece, grid)):
+                    if not (valid_space( current_piece, grid, win)):
                         current_piece.rotation -= 1
 
-        shape_pos = convert_shape_format( current_piece)
+        shape_pos = convert_shape_format(current_piece, win)
 
         for i in range(len(shape_pos)):
             x, y = shape_pos[i]
             if y > -1: #If we are not at the top of the grid
-                grid[y][x] = current_piece.color #drawclea
+                grid[y][x] = current_piece.color #update the color value
+                win.blit(current_piece.image, current_piece.image_rect)
 
         
 
@@ -311,7 +329,7 @@ def main(win):
             clear_rows(grid, lock_positions)
 
         
-        draw_window(win, grid)
+        draw_window(win, grid, current_piece)
         draw_next_shape(next_piece, win)
         pygame.display.update()
         if check_lost(lock_positions):
@@ -322,5 +340,6 @@ def main_menu(win):
     main(win)
 
 win = pygame.display.set_mode((s_width, s_height))
+
 pygame.display.set_caption('KillTrash')
 main_menu(win)  # start game
