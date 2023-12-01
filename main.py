@@ -65,6 +65,7 @@ L = [['.....',
 
 shapes = [L,LL]
 shape_colors = [(0, 255, 0), (255, 0, 0)]
+shape_images = ['Red_Sprite.png','Red_Sprite.png']
 
 
 # index 0 - 1 represent shape
@@ -81,6 +82,8 @@ class Piece(object):
         self.shape = shape
         self.color = shape_colors[shapes.index(shape)]
         self.rotation = 0
+        self.image = pygame.image.load(shape_images[shapes.index(shape)])
+        self.image_rect = self.image.get_rect()
 
 
 def create_grid(locked_positions={}):
@@ -109,13 +112,14 @@ def convert_shape_format(shape):
     for i , pos in enumerate(positions):
         # offset shape left and up
         positions[i] = pos[0] - 2, pos[1] - 4
+        
 
     return positions
 
 
 
 
-def valid_space(shape, grid):
+def valid_space( shape, grid):
     accepted_positions = [[(j, i) for j in range(10) if grid[i][j] == (0, 0, 0)] for i in range(10)]
     accepted_positions = [j for sub in accepted_positions for j in sub]
     formatted = convert_shape_format(shape)
@@ -136,7 +140,7 @@ def check_lost(positions):
 
 
 def get_shape():
-    global shapes, shape_colors
+    global shapes, shape_colors, shape_images
 
     return Piece(1,0, random.choice(shapes))
 
@@ -198,8 +202,9 @@ def draw_next_shape(shape, surface):
         row = list(line)
         for j, column in enumerate(row):
             if column == '0':
-                pygame.draw.rect(surface, shape.color, (sx + j*block_size/2, sy +i *block_size/2, block_size/2, block_size/2), 0)
-
+                #Draw image in the shape form then shift to the side of the screen
+                #pygame.draw.rect(surface, shape.color, (sx + j*block_size/2, sy +i *block_size/2, block_size/2, block_size/2), 0)
+                surface.blit(shape.image,(sx + j*block_size/2, sy +i *block_size/2, block_size/2, block_size/2) )
     surface.blit(label, (sx+50, sy))
 
 
@@ -245,6 +250,8 @@ def main(win):
         clock.tick()
         
         
+        
+        
         #Music here
         #################
         if fall_time /1000 > fall_speed:
@@ -265,7 +272,7 @@ def main(win):
                 if event.key == pygame.K_LEFT:
                     current_piece.x -= 1
                     #check boarder
-                    if not(valid_space(current_piece, grid)):
+                    if not(valid_space( current_piece, grid)):
                         current_piece.x += 1
                 #Right
                 if event.key == pygame.K_RIGHT:
@@ -275,20 +282,22 @@ def main(win):
                 #Down
                 if event.key == pygame.K_DOWN:
                     current_piece.y += 1
-                    if not(valid_space(current_piece,grid)):
+                    if not(valid_space( current_piece,grid)):
                         current_piece.y -= 1
                 #UP
                 if event.key == pygame.K_UP:
                     current_piece.rotation += 1
-                    if not (valid_space(current_piece, grid)):
-                        current_piece -= 1
+                    if not (valid_space( current_piece, grid)):
+                        current_piece.rotation -= 1
 
-        shape_pos = convert_shape_format(current_piece)
+        shape_pos = convert_shape_format( current_piece)
 
         for i in range(len(shape_pos)):
             x, y = shape_pos[i]
-            if y > -1:
-                grid[y][x] = current_piece.color
+            if y > -1: #If we are not at the top of the grid
+                grid[y][x] = current_piece.color #drawclea
+
+        
 
         if change_piece:
             
