@@ -28,6 +28,22 @@ top_left_x = (s_width - play_width) // 2
 top_left_y = s_height - play_height
 
 # SHAPE FORMATS
+S = [[
+      '.....',
+      '.....',
+      '..0..',
+      '.....',
+      '.....'
+
+]]
+
+B = [[
+      '.....',
+      '.....',
+      '..00.',
+      '..00.',
+      '.....'
+]]
 
 LL = [['.....',
       '.....',
@@ -63,13 +79,13 @@ L = [['.....',
 
 
 
-shapes = [L,LL]
-shape_colors = [(0, 255, 0), (255, 0, 0)]
-shape_images = ['Red_Sprite.png','Red_Sprite.png']
+shapes = [L,LL, S, B]
+shape_colors = [(0, 255, 0), (255, 0, 0), (0,0, 255), (128,128,128)]
+shape_images = ['Red_Sprite.png','Red_Sprite.png','Red_Sprite.png','Red_Sprite.png']
 
 
-# index 0 - 1 represent shape
-# Only 2 shapes
+# index 0 - 3 represent shape
+# 4 shapes
 
 
 class Piece(object):
@@ -148,7 +164,7 @@ def check_lost(positions):
 
 def get_shape():
     global shapes, shape_colors, shape_images
-    return Piece(1,0, random.choice(shapes))
+    return Piece(3,0, random.choice(shapes))
 
 
 
@@ -185,14 +201,16 @@ def clear_rows(grid, locked):
                 except:
                     continue
     
-    if inc > 0: 
-        #The lambda function returns the second item of the list while looping the list backward 
-        # so we don't overwrite any existing rows
-        for key in sorted(list(locked), key = lambda x: x[1])[::-1]:
-            x, y = key
-            if y < ind:
-                newKey = (x, y + inc)
-                locked[newKey] = locked.pop(key)
+    # if inc > 0:
+    ##############comment###################
+    #     #The lambda function returns the second item of the list while looping the list backward
+    #     # so we don't overwrite any existing rows
+    ###############comment##################
+    #     for key in sorted(list(locked), key = lambda x: x[1])[::-1]:
+    #         x, y = key
+    #         if y < ind:
+    #             newKey = (x, y + inc)
+    #             locked[newKey] = locked.pop(key)
 
 
 
@@ -223,7 +241,7 @@ def draw_window(surface, grid, shape):
 
     pygame.font.init()
     font = pygame.font.SysFont('Grand9K Pixel', 50)
-    label = font.render('KillTrash', 1, (255, 255, 255))
+    label = font.render('Compactor', 1, (255, 255, 255))
 
     surface.blit(label, (top_left_x + play_width / 2 - (label.get_width() / 2), 30))
 
