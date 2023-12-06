@@ -81,7 +81,7 @@ L = [['.....',
 
 shapes = [L,LL, S, B]
 shape_colors = [(0, 255, 0), (255, 0, 0), (0,0, 255), (128,128,128)]
-shape_images = ['Red_Sprite.png','Red_Sprite.png','Red_Sprite.png','Red_Sprite.png']
+shape_images = ['Red_Sprite.png','green_sprite.png','yellow_sprite.png','blue_sprite.png']
 
 
 # index 0 - 3 represent shape
@@ -127,7 +127,7 @@ def convert_shape_format(shape, surface):
         for j, column in enumerate(row):
             if column == '0':
                 positions.append((shape.x +j, shape.y + i))
-                surface.blit(shape.image, (shape.x +j, shape.y + i))
+
 
 
 
@@ -164,7 +164,9 @@ def check_lost(positions):
 
 def get_shape():
     global shapes, shape_colors, shape_images
-    return Piece(3,0, random.choice(shapes))
+    c_shape = Piece(3,0, random.choice(shapes))
+    return c_shape
+
 
 
 
@@ -200,7 +202,7 @@ def clear_rows(grid, locked):
                     del locked[(j,i)]
                 except:
                     continue
-    
+    #Shifting the row
     # if inc > 0:
     ##############comment###################
     #     #The lambda function returns the second item of the list while looping the list backward
@@ -237,6 +239,11 @@ def draw_next_shape(shape, surface):
 def draw_window(surface, grid, shape):
     row = 10
     col = 10
+    #currentImage
+    c_image = shape.image
+    p_image = []
+
+
     surface.fill((0, 0, 0))
 
     pygame.font.init()
@@ -253,9 +260,10 @@ def draw_window(surface, grid, shape):
 
             # Replace block with asset if not black
             if grid[i][j] != (0,0,0):
-                surface.blit(shape.image, (top_left_x + j * block_size, top_left_y + i * block_size, block_size, block_size))
-
-
+                surface.blit(c_image, (top_left_x + j * block_size, top_left_y + i * block_size, block_size, block_size))
+            # elif grid[i][j] == (0,0,0):
+            #     previous_image = c_image
+            #     surface.blit(previous_image, (top_left_x + j * block_size, top_left_y + i * block_size, block_size, block_size))
     # boarder for grid
     pygame.draw.rect(surface, (255, 0, 0), (top_left_x, top_left_y, play_width, play_height), 4)
 
@@ -269,19 +277,19 @@ def main(win):
     change_piece = False
     run = True
     current_piece = get_shape()
+    previous_piece = current_piece
     next_piece = get_shape()
     clock = pygame.time.Clock()
     fall_time = 0
     fall_speed = 0.40
     current_piece.x = 4
     level_time = 0
-
+    p_image = []
     while run:
         grid = create_grid(lock_positions)
         fall_time += clock.get_rawtime()
         clock.tick()
-        win.blit(current_piece.image, (current_piece.x, current_piece.y))
-
+        p_image.append(current_piece.image)
         
         
         
@@ -294,7 +302,7 @@ def main(win):
             if not(valid_space(current_piece, grid, win) and current_piece.y > 0):
                 current_piece.y -= 1
                 change_piece = True
-
+                previous_piece = current_piece
 
 
         #Key press check
@@ -326,27 +334,34 @@ def main(win):
                         current_piece.rotation -= 1
 
         shape_pos = convert_shape_format(current_piece, win)
-
         for i in range(len(shape_pos)):
             x, y = shape_pos[i]
             if y > -1: #If we are not at the top of the grid
                 grid[y][x] = current_piece.color #update the color value
-                win.blit(current_piece.image, current_piece.image_rect)
 
-        
+        shape_pos = convert_shape_format(previous_piece, win)
+        for i in range(len(shape_pos)):
+            x, y = shape_pos[i]
+            if y > -1:  # If we are not at the top of the grid
+                grid[y][x] = current_piece.color  # update the color value
+
+
+
+
+
 
         if change_piece:
-            
             for pos in shape_pos:
-                p = (pos[0], pos[1])
-                lock_positions[p] = current_piece.color
+                    p = (pos[0], pos[1])
+                    lock_positions[p] = current_piece.color
+            previous_piece = current_piece
             current_piece = next_piece
             next_piece = get_shape()
             current_piece.x = 4
             change_piece = False
             clear_rows(grid, lock_positions)
 
-        
+
         draw_window(win, grid, current_piece)
         draw_next_shape(next_piece, win)
         pygame.display.update()
