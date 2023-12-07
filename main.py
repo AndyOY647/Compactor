@@ -1,5 +1,8 @@
 import pygame
 import random
+pygame.init()
+
+
 
 # creating the data structure for pieces
 # setting up global vars
@@ -84,6 +87,7 @@ shape_colors = [(0, 255, 0), (255, 0, 0), (0,0, 255), (128,128,128)]
 shape_images = ['Red_Sprite.png','green_sprite.png','yellow_sprite.png','blue_sprite.png']
 
 
+
 # index 0 - 3 represent shape
 # 4 shapes
 
@@ -103,6 +107,7 @@ class Piece(object):
 
     def display(self, surface, image):
         surface.blit(image)
+
 
 
 def create_grid(locked_positions={}):
@@ -244,6 +249,7 @@ def draw_window(surface, grid, shape):
     p_image = []
 
 
+
     surface.fill((0, 0, 0))
 
     pygame.font.init()
@@ -271,6 +277,8 @@ def draw_window(surface, grid, shape):
     draw_grid(surface, row, col)
     #pygame.display.update()
 
+def draw_lock_pos(surface, image, pos):
+    surface.blit(image, pos)
 def main(win):
     lock_positions = {}
     grid = create_grid(lock_positions)
@@ -339,11 +347,6 @@ def main(win):
             if y > -1: #If we are not at the top of the grid
                 grid[y][x] = current_piece.color #update the color value
 
-        shape_pos = convert_shape_format(previous_piece, win)
-        for i in range(len(shape_pos)):
-            x, y = shape_pos[i]
-            if y > -1:  # If we are not at the top of the grid
-                grid[y][x] = current_piece.color  # update the color value
 
 
 
@@ -352,9 +355,8 @@ def main(win):
 
         if change_piece:
             for pos in shape_pos:
-                    p = (pos[0], pos[1])
-                    lock_positions[p] = current_piece.color
-            previous_piece = current_piece
+                p = (pos[0], pos[1])
+                lock_positions[p] = current_piece.color
             current_piece = next_piece
             next_piece = get_shape()
             current_piece.x = 4
@@ -369,10 +371,76 @@ def main(win):
             run = False
 
     pygame.display.quit()
+
+
 def main_menu(win):
-    main(win)
+
+    run = True
+    while run:
+        win.fill((0,0,0))
+        win.blit(menu_bg, (0,-50))
+
+
+        if start_button.draw():
+            print("start is clicked")
+            win.blit(start2, (300,300))
+            win.blit(credit1, (300,500))
+            pygame.display.update()
+            pygame.time.delay(300)
+            main(win)
+
+
+        if credit_button.draw():
+            win.blit(credit2, (300,500))
+            win.blit(start1, (300,300))
+            win.fill((0,0,0))
+            win.blit(credits, (300,300))
+            pygame.display.update()
+            pygame.time.delay(2000)
+
+
+        pygame.display.update()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+
+class Button():
+    def __init__(self, x,y, image, scale):
+
+        width = image.get_width()
+        height = image.get_height()
+        self.image = pygame.transform.scale(image, ( int(width * scale), int(height * scale) ))
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (x,y)
+        self.clicked = False
+
+    def draw(self):
+        action = False
+        pos = pygame.mouse.get_pos()
+        #check mouse over  and clicked
+        if self.rect.collidepoint(pos):
+            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
+                self.clicked = True
+                action = True
+            if pygame.mouse.get_pressed()[0] == 0:
+                self.clicked = False
+        win.blit(self.image, (self.rect.x, self.rect.y))
+
+        return action
 
 win = pygame.display.set_mode((s_width, s_height))
+#bg and button
+menu_bg = pygame.image.load('BGMenu.png').convert_alpha()
+start1 = pygame.image.load('Start1.png').convert_alpha()
+start2 = pygame.image.load('Start2.png').convert_alpha()
+credit1 = pygame.image.load('Credits1.png').convert_alpha()
+credit2 = pygame.image.load('Credits2.png').convert_alpha()
+credits = pygame.image.load('credits.png').convert_alpha()
+credits = pygame.transform.scale(credits, (300,300))
+
+credit_button = Button(300,500, credit1, 1)
+start_button = Button(300,300, start1, 1)
 
 pygame.display.set_caption('KillTrash')
 main_menu(win)  # start game
