@@ -2,6 +2,12 @@ import pygame
 import random
 pygame.init()
 
+pygame.mixer.init()
+row_clear_sound = pygame.mixer.Sound('Balloon_pop.mp3')
+pygame.mixer.music.load('Melody_energy.mp3')
+
+main_game_bg = pygame.image.load('background.gif')
+
 
 
 # creating the data structure for pieces
@@ -195,6 +201,7 @@ def draw_grid(surface, row, col):
 
 
 def clear_rows(grid, locked):
+
     inc = 0
     #looping the grid backward
     for i in range(len(grid)-1, -1, -1):
@@ -204,8 +211,13 @@ def clear_rows(grid, locked):
             ind = i
             for j in range(len(row)):
                 try:
+                    pygame.mixer.music.stop()
+                    row_clear_sound.set_volume(0.05)
+                    pygame.mixer.Sound.play(row_clear_sound)
                     del locked[(j,i)]
                 except:
+                    pygame.mixer.music.set_volume(0.5)
+                    pygame.mixer.music.play(-1)
                     continue
     #Shifting the row
     # if inc > 0:
@@ -246,12 +258,11 @@ def draw_window(surface, grid, shape):
     col = 10
     #currentImage
     c_image = shape.image
-    p_image = []
 
 
 
-    surface.fill((0, 0, 0))
 
+    surface.blit(main_game_bg, (-300,0))
     pygame.font.init()
     font = pygame.font.SysFont('Grand9K Pixel', 50)
     label = font.render('Compactor', 1, (255, 255, 255))
@@ -265,7 +276,7 @@ def draw_window(surface, grid, shape):
             #                  (top_left_x + j * block_size, top_left_y + i * block_size, block_size, block_size), 0)
 
             # Replace block with asset if not black
-            if grid[i][j] != (0,0,0):
+            if grid[i][j] in shape_colors:
                 surface.blit(c_image, (top_left_x + j * block_size, top_left_y + i * block_size, block_size, block_size))
             # elif grid[i][j] == (0,0,0):
             #     previous_image = c_image
@@ -285,7 +296,8 @@ def main(win):
     change_piece = False
     run = True
     current_piece = get_shape()
-    previous_piece = current_piece
+    previous_piece = []
+    previous_piece.append(current_piece)
     next_piece = get_shape()
     clock = pygame.time.Clock()
     fall_time = 0
@@ -294,11 +306,12 @@ def main(win):
     level_time = 0
     p_image = []
     while run:
+        win.blit(main_game_bg, (200, 0))
         grid = create_grid(lock_positions)
         fall_time += clock.get_rawtime()
         clock.tick()
-        p_image.append(current_piece.image)
-        
+
+
         
         
         
@@ -310,7 +323,7 @@ def main(win):
             if not(valid_space(current_piece, grid, win) and current_piece.y > 0):
                 current_piece.y -= 1
                 change_piece = True
-                previous_piece = current_piece
+                previous_piece.append(current_piece)
 
 
         #Key press check
@@ -345,7 +358,7 @@ def main(win):
         for i in range(len(shape_pos)):
             x, y = shape_pos[i]
             if y > -1: #If we are not at the top of the grid
-                grid[y][x] = current_piece.color #update the color value
+                grid[y][x] = previous_piece[-1].color #update the color value
 
 
 
@@ -377,12 +390,13 @@ def main_menu(win):
 
     run = True
     while run:
+        pygame.mixer.music.set_volume(0.5)
+        pygame.mixer.music.play(-1)
         win.fill((0,0,0))
         win.blit(menu_bg, (0,-50))
 
 
         if start_button.draw():
-            print("start is clicked")
             win.blit(start2, (300,300))
             win.blit(credit1, (300,500))
             pygame.display.update()
