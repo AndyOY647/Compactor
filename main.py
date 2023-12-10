@@ -128,7 +128,6 @@ class Piece(object):
     def display(self, surface, image):
         surface.blit(image)
 
-
 def get_image(sheet, frame, width, height):
     image = pygame.Surface((width, height)).convert_alpha()
     image.blit(sheet, (0,0), ((frame*width), 0, width,height))
@@ -220,10 +219,6 @@ def draw_grid(surface, row, col):
         for j in range(col):
             pygame.draw.line(surface, (128,128,128), (sx+ j *block_size, sy), (sx + j* block_size , sy + play_height))
 
-
-
-
-
 def clear_rows(grid, locked):
 
     inc = 0
@@ -238,22 +233,24 @@ def clear_rows(grid, locked):
                     pygame.mixer.music.pause()
                     row_clear_sound.set_volume(0.05)
                     pygame.mixer.Sound.play(row_clear_sound)
-                    pygame.mixer.music.play(-1)
+                    pygame.mixer.music.play(10)
                     del locked[(j,i)]
                 except:
-
                     continue
-    #Shifting the row
-    # if inc > 0:
+
+
+    if inc > 0:
     ##############comment###################
     #     #The lambda function returns the second item of the list while looping the list backward
     #     # so we don't overwrite any existing rows
     ###############comment##################
-    #     for key in sorted(list(locked), key = lambda x: x[1])[::-1]:
-    #         x, y = key
-    #         if y < ind:
-    #             newKey = (x, y + inc)
-    #             locked[newKey] = locked.pop(key)
+        for key in sorted(list(locked), key = lambda x: x[1])[::-1]:
+            x, y = key
+            if y < ind:
+                newKey = (x, y + inc)
+                # Shifting the row
+                #locked[newKey] = locked.pop(key)
+    return inc
 
 
 
@@ -280,7 +277,7 @@ def draw_next_shape(shape, surface):
 
 
 
-def draw_window(surface, grid, shape):
+def draw_window(surface, grid, shape, score=0):
     row = 10
     col = 10
     p_list = []
@@ -294,6 +291,19 @@ def draw_window(surface, grid, shape):
     title = pygame.image.load("Title.png")
 
     surface.blit(title, (top_left_x + play_width / 2 - (title.get_width() / 2), -70))
+
+
+
+    sx = top_left_x + play_width
+    sy = top_left_y + play_height / 2 - 100
+
+    font = pygame.font.SysFont('Sharpe Sans', 50)
+    label = font.render('Score: ' + str(score), 1, (57, 74, 160))
+    label2 = font.render('Score: ' + str(score), 1, (255, 238, 0))
+
+
+    surface.blit(label, (sx-800, sy+98))
+    surface.blit(label2, (sx - 800, sy + 102))
 
     for i in range(len(grid)):
         for j in range(len(grid[i])):
@@ -332,12 +342,12 @@ def main(win):
     bg_animation = []
     animation_steps = 8
     last_update = pygame.time.get_ticks()
-    cooldown = 500
+    cooldown = 250
     frame = 0
+    score = 0
     win.fill((0, 0, 0))
     for x in range(animation_steps):
         bg_animation.append(get_image(bg_image, x, 500, 1000))
-
 
     while run:
         current_time = pygame.time.get_ticks()
@@ -349,17 +359,10 @@ def main(win):
 
         win.blit(bg_animation[frame], (0, 0))
 
-        # bg_animation(bg_images, win)
         grid = create_grid(lock_positions)
         fall_time += clock.get_rawtime()
         clock.tick()
 
-
-        
-        
-        
-        #Music here
-        #################
         if fall_time /1000 > fall_speed:
             fall_time = 0
             current_piece.y += 1
@@ -372,7 +375,11 @@ def main(win):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-
+                pygame.display.quit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    run = False
+                    main_menu(win)
             if event.type == pygame.KEYDOWN:
                 #Left
                 if event.key == pygame.K_LEFT:
@@ -403,26 +410,20 @@ def main(win):
                 grid[y][x] = current_piece.color #update the color value
 
 
-
-
-
-
-
         if change_piece:
             p_list.append(current_piece.image)
             for pos in shape_pos:
                 p = (pos[0], pos[1])
                 lock_positions[p] = current_piece.color
 
-
             current_piece = next_piece
             next_piece = get_shape()
             current_piece.x = 4
             change_piece = False
-            clear_rows(grid, lock_positions)
+            score += clear_rows(grid, lock_positions) * 10
 
 
-        draw_window(win, grid, current_piece)
+        draw_window(win, grid, current_piece, score)
         draw_next_shape(next_piece, win)
         pygame.display.update()
         if check_lost(lock_positions):
@@ -432,7 +433,7 @@ def main(win):
             pygame.mixer.Sound.play(gameOver)
             pygame.time.delay(4000)
 
-    pygame.display.quit()
+    main_menu(win)
 
 
 def main_menu(win):
@@ -441,7 +442,6 @@ def main_menu(win):
     while run:
         pygame.mixer.music.set_volume(0.5)
         pygame.mixer.music.play(-1)
-        win.fill((0,0,0))
         win.blit(menu_bg, (0,-50))
 
 
@@ -470,6 +470,7 @@ def main_menu(win):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+                pygame.display.quit()
 
 class Button():
     def __init__(self, x,y, image, scale):
