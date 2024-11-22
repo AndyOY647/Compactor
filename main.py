@@ -3,15 +3,16 @@ import random
 pygame.init()
 
 pygame.mixer.init()
-row_clear_sound = pygame.mixer.Sound('Balloon_pop.mp3')
-pygame.mixer.music.load('Melody_energy.mp3')
-gameOver = pygame.mixer.Sound('game_over.wav')
-yay = pygame.mixer.Sound('Yay.mp3')
+
+row_clear_sound = pygame.mixer.Sound('KillTrash/Balloon_pop.mp3')
+pygame.mixer.music.load('KillTrash/Melody_energy.mp3')
+gameOver = pygame.mixer.Sound('KillTrash/game_over.wav')
+yay = pygame.mixer.Sound('KillTrash/Yay.mp3')
 
 
-window_img = pygame.image.load('window.png')
+window_img = pygame.image.load('KillTrash/window.png')
 window_img = pygame.transform.scale(window_img, (200,200))
-firework = pygame.image.load('firework.jpg')
+firework = pygame.image.load('KillTrash/firework.jpg')
 firework = pygame.transform.scale(firework, (1000,768))
 
 
@@ -99,7 +100,7 @@ L = [['.....',
 
 shapes = [L,LL, S, B]
 shape_colors = [(0, 255, 0), (255, 0, 0), (0,0, 255), (128,128,128)]
-shape_images = ['Red_Sprite.png','green_sprite.png','yellow_sprite.png','blue_sprite.png']
+shape_images = ['KillTrash/Red_Sprite.png','KillTrash/green_sprite.png','KillTrash/yellow_sprite.png','KillTrash/blue_sprite.png']
 
 
 
@@ -288,7 +289,7 @@ def draw_window(surface, grid, shape, score=0):
 
     pygame.font.init()
     font = pygame.font.SysFont('Grand9K Pixel', 50)
-    title = pygame.image.load("Title.png")
+    title = pygame.image.load("KillTrash/Title.png")
 
     surface.blit(title, (top_left_x + play_width / 2 - (title.get_width() / 2), -70))
 
@@ -499,13 +500,13 @@ class Button():
 
 win = pygame.display.set_mode((s_width, s_height))
 #bg and button
-bg_image = pygame.image.load('bg_image.png').convert_alpha()
-menu_bg = pygame.image.load('BGMenu.png').convert_alpha()
-start1 = pygame.image.load('Start1.png').convert_alpha()
-start2 = pygame.image.load('Start2.png').convert_alpha()
-credit1 = pygame.image.load('Credits1.png').convert_alpha()
-credit2 = pygame.image.load('Credits2.png').convert_alpha()
-credits = pygame.image.load('credits.png').convert_alpha()
+bg_image = pygame.image.load('KillTrash/bg_image.png').convert_alpha()
+menu_bg = pygame.image.load('KillTrash/BGMenu.png').convert_alpha()
+start1 = pygame.image.load('KillTrash/Start1.png').convert_alpha()
+start2 = pygame.image.load('KillTrash/Start2.png').convert_alpha()
+credit1 = pygame.image.load('KillTrash/Credits1.png').convert_alpha()
+credit2 = pygame.image.load('KillTrash/Credits2.png').convert_alpha()
+credits = pygame.image.load('KillTrash/credits.png').convert_alpha()
 credits = pygame.transform.scale(credits, (500,500))
 
 credit_button = Button(300,500, credit1, 1)
